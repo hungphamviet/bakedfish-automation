@@ -7,6 +7,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.bfa.core.util.BfaConfig.getConfigValueAsString;
 import static com.bfa.core.util.LocatorUtils.getLocatorByKey;
@@ -55,14 +56,26 @@ public class GooglePage extends Page {
    }
 
    public Page openSearchResultAt(int resultPositionAsOneBased) {
-      waitForSearchResultToBeVisible();
-      List<WebElement> resultLinks = webDriver.findElements(getLocatorByKey(RESULT_LINK_LOCATOR_KEY));
-      if (resultPositionAsOneBased > resultLinks.size()) {
-         throw new BfaRuntimeException("There is only " + resultLinks.size() + " results, can not open the link at position: " + resultPositionAsOneBased);
+      List<WebElement> resultLinksWebElementAtCurrentPage = getResultLinksWebElementAtCurrentPage();
+      if (resultPositionAsOneBased > resultLinksWebElementAtCurrentPage.size()) {
+         throw new BfaRuntimeException("There is only " + resultLinksWebElementAtCurrentPage.size() + " results, can not open the link at position: " + resultPositionAsOneBased);
       }
-      WebElement firstResult = resultLinks.get(resultPositionAsOneBased - 1);
-      firstResult.click();
+      WebElement resultLinkWebElementAtPosition = resultLinksWebElementAtCurrentPage.get(resultPositionAsOneBased - 1);
+      resultLinkWebElementAtPosition.click();
       return new Page(webDriver);
+   }
+
+   private List<WebElement> getResultLinksWebElementAtCurrentPage() {
+      waitForSearchResultToBeVisible();
+      List<WebElement> resultLinksWebElementAtCurrentPage = webDriver.findElements(getLocatorByKey(RESULT_LINK_LOCATOR_KEY));
+      return resultLinksWebElementAtCurrentPage;
+   }
+
+   public List<String> getResultLinksAtCurrentPage() {
+      List<WebElement> resultLinksWebElementAtCurrentPage = getResultLinksWebElementAtCurrentPage();
+      return resultLinksWebElementAtCurrentPage.stream()
+            .map(webElement -> webElement.getAttribute(ATTRIBUTE_HREF))
+            .collect(Collectors.toList());
    }
 
    private void waitForSearchResultToBeVisible() {

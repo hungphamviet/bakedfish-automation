@@ -15,6 +15,8 @@ public class Page {
 
    public static final String DEFAULT_WAIT_TIME_IN_SECONDS_KEY = "webdriver.defaultWaitTimeInSeconds";
 
+   public static final String ATTRIBUTE_HREF = "href";
+
    protected final WebDriver webDriver;
 
    public Page(WebDriver webDriver) {
